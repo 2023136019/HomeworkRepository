@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "name": "Movie Poster - Interstellar",
+        "price": 5000,
+        "description": "High quality Interstellar poster"
+    },
+    {
+        "id": 2,
+        "name": "Movie Poster - Inception",
+        "price": 5000,
+        "description": "High quality Inception poster"
+    },
+    {
+        "id": 3,
+        "name": "Movie Poster - Grave Encounters",
+        "price": 5000,
+        "description": "High quality Grave Encounters poster"
+    }
+]

@@ -1,6 +1,6 @@
 /* Base Styles */
 body {
-    background-color: #000;
+    background-color: #333; /* 기존 #000에서 변경 */
     color: #fff;
     font-family: Arial, sans-serif;
     margin: 0;
