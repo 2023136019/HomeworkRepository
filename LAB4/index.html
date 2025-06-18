@@ -1,61 +1,215 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>영화 정보 메인페이지</title>
     <link rel="stylesheet" href="main.css" />
 </head>
+
 <body>
-    <div class="container">
-        <div class="header-banner">
-            <h1><span class="slide-text">Welcome to INTERNET-PROGRAMMING MOVIE SITE</span></h1>
+    <header>
+        <div class="container">
+            <h1>인프밍 영화 정보</h1>
+            <nav>
+                <a href="./index.html">메인페이지</a>
+                <a href="./login.html">로그인</a>
+                <a href="./signup.html">회원가입</a>
+            </nav>
         </div>
-        <nav>
-            <ul class="nav-menu">
-                <li class="current">메인</li>
-                <li><a href="login.html">로그인</a></li>
-                <li><a href="signup.html">회원가입</a></li>
-                <li><a href="product.json">제품정보(JSON)</a></li>
-            </ul>
-        </nav>
-        <div class="main-content">
-            <h2>소개하는 영화</h2>
-            <div class="movies-container">
-                <div class="movie-item">
-                    <div class="image-container">
-                        <img src="interstella.jpg" alt="Interstellar 포스터">
-                        <div class="overlay-text">Interstellar</div>
-                    </div>
-                    <div class="movie-title">Interstellar</div>
-                    <ul class="movie-meta">
-                        <li>2014</li>
-                        <li>SF</li>
-                    </ul>
-                </div>
-                <div class="movie-item">
-                    <div class="image-container">
-                        <img src="Inception.jpg" alt="Inception 포스터">
-                        <div class="overlay-text">Inception</div>
-                    </div>
-                    <div class="movie-title">Inception</div>
-                    <ul class="movie-meta">
-                        <li>2010</li>
-                        <li>SF</li>
-                    </ul>
-                </div>
-                <div class="movie-item">
-                    <div class="image-container">
-                        <img src="GraveEncounters.jpg" alt="Grave Encounters 포스터">
-                        <div class="overlay-text">Grave Encounters</div>
-                    </div>
-                    <div class="movie-title">Grave Encounters</div>
-                    <ul class="movie-meta">
-                        <li>2011</li>
-                        <li>Horror</li>
-                    </ul>
-                </div>
+    </header>
+
+    <main class="container">
+        <h2>Movies</h2>
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="키워드를 입력하세요">
+                <button id="search-button">Filter results</button>
+            </div>
+            <div class="sort-container">
+                <fieldset>
+                    <legend>정렬 기준</legend>
+                    <label><input type="radio" name="sort" value="default" checked> 기본</label>
+                    <label><input type="radio" name="sort" value="rating_desc"> 평점 내림차순</label>
+                    <label><input type="radio" name="sort" value="rating_asc"> 평점 오름차순</label>
+                    <label><input type="radio" name="sort" value="release_desc"> 개봉일 내림차순</label>
+                    <label><input type="radio" name="sort" value="release_asc"> 개봉일 오름차순</label>
+                </fieldset>
             </div>
         </div>
-    </div>
+
+        <div id="movie-container">
+        </div>
+
+        <div id="loader">
+            Loading more movies...
+        </div>
+    </main>
+
+    <script>
+        // DOM이 완전히 로드된 후 스크립트 실행
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 상태 변수 정의 ---
+            let allMovies = []; // JSON에서 가져온 모든 영화 원본 데이터
+            let displayedMovies = []; // 필터링 및 정렬 후 화면에 표시될 영화 목록
+            let currentMovies = []; // 현재 화면에 렌더링된 영화 목록 (무한 스크롤용)
+            const MOVIES_PER_LOAD = 8; // 한 번에 로드할 영화 수
+
+            // --- DOM 요소 가져오기 ---
+            const movieContainer = document.getElementById('movie-container');
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            const sortOptions = document.querySelectorAll('input[name="sort"]');
+            const loader = document.getElementById('loader');
+
+            // --- 초기화 함수 ---
+            // 애플리케이션 시작 시 영화 데이터를 가져오는 메인 함수
+            async function initialize() {
+                await fetchMovies();
+                addEventListeners();
+                setupIntersectionObserver();
+            }
+
+            // --- 데이터 로딩 ---
+            // Fetch API를 사용하여 product.json 파일 비동기적으로 로드
+            async function fetchMovies() {
+                try {
+                    const response = await fetch('product.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    allMovies = await response.json();
+                    displayedMovies = [...allMovies]; // 초기 표시 목록은 전체 영화
+                    loadMoreMovies(); // 첫 페이지 영화 로드
+                } catch (error) {
+                    console.error("영화 데이터를 불러오는 데 실패했습니다:", error);
+                    movieContainer.innerHTML = "<p>영화를 불러오는 데 실패했습니다. 페이지를 새로고침 해주세요.</p>";
+                }
+            }
+
+            // --- 렌더링 함수 ---
+            // 영화 데이터를 받아와 HTML 요소(카드)로 만들어 화면에 추가
+            function renderMovies(moviesToRender) {
+                const fragment = document.createDocumentFragment();
+                moviesToRender.forEach(movie => {
+                    const movieCard = document.createElement('div');
+                    movieCard.className = 'movie-card';
+
+                    // 영화 카드 내부 HTML 구조
+                    movieCard.innerHTML = `
+                <img src="${movie.poster_path}" alt="${movie.title} 포스터">
+                <div class="movie-info">
+                    <h3>${movie.title}</h3>
+                    <p>개봉: ${movie.release_date}</p>
+                    <p>평점: ☆${movie.vote_average} / 10</p>
+                </div>
+                <div class="movie-overview">
+                    <h4>줄거리</h4>
+                    <p>${movie.overview}</p>
+                </div>
+            `;
+                    fragment.appendChild(movieCard);
+                });
+                movieContainer.appendChild(fragment);
+            }
+
+            // --- 무한 스크롤 관련 함수 ---
+            // displayedMovies 배열에서 다음 페이지의 영화들을 로드
+            function loadMoreMovies() {
+                const startIndex = currentMovies.length;
+                const endIndex = startIndex + MOVIES_PER_LOAD;
+                const newMovies = displayedMovies.slice(startIndex, endIndex);
+
+                if (newMovies.length > 0) {
+                    renderMovies(newMovies);
+                    currentMovies.push(...newMovies);
+                    loader.style.display = 'block'; // 로더 표시
+                }
+
+                // 더 이상 로드할 영화가 없으면 로더 숨김
+                if (currentMovies.length >= displayedMovies.length) {
+                    loader.style.display = 'none';
+                }
+            }
+
+            // IntersectionObserver를 설정하여 무한 스크롤 구현
+            function setupIntersectionObserver() {
+                const options = {
+                    root: null, // 뷰포트를 기준으로 관찰
+                    rootMargin: '0px',
+                    threshold: 1.0 // 타겟 요소가 100% 보일 때 콜백 실행
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    // entries[0].isIntersecting: loader 요소가 뷰포트에 들어왔는지 확인
+                    if (entries[0].isIntersecting && currentMovies.length < displayedMovies.length) {
+                        loadMoreMovies();
+                    }
+                }, options);
+
+                observer.observe(loader); // loader 요소 관찰 시작
+            }
+
+            // --- 필터링 및 정렬 함수 ---
+            // 검색어와 정렬 기준에 따라 영화 목록을 업데이트하는 중앙 함수
+            function applyFiltersAndSort() {
+                let tempMovies = [...allMovies]; // 원본 데이터로 시작
+
+                // 1. 키워드 검색 필터링
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    tempMovies = tempMovies.filter(movie =>
+                        movie.title.toLowerCase().includes(searchTerm) ||
+                        movie.overview.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                // 2. 정렬 기준 적용
+                const sortValue = document.querySelector('input[name="sort"]:checked').value;
+                switch (sortValue) {
+                    case 'rating_desc':
+                        tempMovies.sort((a, b) => b.vote_average - a.vote_average);
+                        break;
+                    case 'rating_asc':
+                        tempMovies.sort((a, b) => a.vote_average - b.vote_average);
+                        break;
+                    case 'release_desc':
+                        tempMovies.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+                        break;
+                    case 'release_asc':
+                        tempMovies.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+                        break;
+                    // 'default'는 정렬하지 않음 (기본 ID 순서)
+                }
+
+                // 3. 화면 업데이트
+                displayedMovies = tempMovies; // 표시될 영화 목록 업데이트
+                movieContainer.innerHTML = ''; // 기존 영화 목록 초기화
+                currentMovies = []; // 현재 렌더링된 영화 목록 초기화
+                loadMoreMovies(); // 필터링/정렬된 결과로 첫 페이지 로드
+            }
+
+            // --- 이벤트 리스너 설정 ---
+            function addEventListeners() {
+                // 검색 버튼 클릭 시
+                searchButton.addEventListener('click', applyFiltersAndSort);
+                // 검색창에서 Enter 키 입력 시
+                searchInput.addEventListener('keyup', (event) => {
+                    if (event.key === 'Enter') {
+                        applyFiltersAndSort();
+                    }
+                });
+                // 정렬 옵션 변경 시
+                sortOptions.forEach(radio => {
+                    radio.addEventListener('change', applyFiltersAndSort);
+                });
+            }
+
+            // --- 애플리케이션 실행 ---
+            initialize();
+        });  
+    </script>
 </body>
+
 </html>

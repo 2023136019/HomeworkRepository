@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인프밍 영화 정보 사이트</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>인프밍 영화 정보 사이트입니다.</h1>
+            <nav>
+                <a href="/">메인페이지</a>
+                <a href="/login">로그인</a>
+                <a href="/signup">회원가입</a>
+            </nav>
+        </header>
+        <main>
+            <div id="search-sort-container">
+                <input type="text" id="search-input" placeholder="키워드를 입력하세요">
+                <select id="sort-select">
+                    <option value="rate_desc">평점 내림차순</option>
+                    <option value="rate_asc">평점 오름차순</option>
+                    <option value="date_desc">개봉일 내림차순</option>
+                    <option value="date_asc">개봉일 오름차순</option>
+                </select>
+            </div>
+            <h2>Movies</h2>
+            <div id="movie-grid">
+                </div>
+        </main>
+    </div>
+    <script src="/js/main.js"></script>
+</body>
+</html>

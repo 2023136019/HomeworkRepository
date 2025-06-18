@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <title>로그인</title>
-    <link rel="stylesheet" href="main.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 인프밍 영화 정보</title>
+    <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header-banner">
-            <h1>Welcome to INTERNET-PROGRAMMING MOVIE SITE</h1>
+    <header>
+        <div class="container">
+            <h1>인프밍 영화 정보</h1>
+            <nav>
+                <a href="./index.html">메인페이지</a>
+                <a href="./login.html">로그인</a>
+                <a href="./signup.html">회원가입</a>
+            </nav>
         </div>
-        <nav>
-            <ul class="nav-menu">
-                <li><a href="index.html">메인</a></li>
-                <li class="current">로그인</li>
-                <li><a href="signup.html">회원가입</a></li>
-            </ul>
-        </nav>
-        <form class="login-form">
+    </header>
+
+    <main class="container">
+        <div class="auth-form">
             <h2>로그인</h2>
-            <div class="form-group">
-                <label for="loginId">아이디</label>
-                <input type="text" id="loginId" name="id" autofocus required />
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">비밀번호</label>
-                <input type="password" id="loginPassword" name="password" required />
-            </div>
-            <div class="form-group radio-group">
-                <input type="checkbox" id="saveId" name="saveId" />
-                <label for="saveId">아이디 저장</label>
-            </div>
-            <div class="form-group button-group">
-                <button type="submit" class="btn">로그인</button>
-                <button type="reset" class="btn">취소</button>
-            </div>
-        </form>
-    </div>
+            <form>
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="form-button">로그인</button>
+                <p class="form-link">
+                    계정이 없으신가요? <a href="./signup.html">회원가입</a>
+                </p>
+            </form>
+        </div>
+    </main>
 </body>
 </html>
